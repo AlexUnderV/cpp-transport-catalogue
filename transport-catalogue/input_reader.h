@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <fstream>
 
 namespace transport {
 
@@ -26,23 +27,20 @@ namespace transport {
         STOP
     };
 
-    struct Query {
+    struct RawQuery {
         QyeryTypes type;
         std::string name;
     };
 
     namespace parse {
         Stop OnStop(std::string& line);
-        StopDistances OnStopWithDistances(std::string& line);
+        StopDistances OnStopWithDistances(const std::string& line);
         Bus OnBus(std::string& line, const std::unordered_map<std::string_view, Stop*>& for_stop_ptrs);
     }
 
     namespace input {
-        RawData DataFromCommandLine();
-        std::vector<Query> QueryFromCommandLine();
-
-        RawData DataFromFile(std::string file_name);
-        std::vector<Query> QueryFromFile(std::string file_name);
+        RawData Data(std::istream& input);
+        std::vector<RawQuery> Query(std::istream& input);
     }
 
 

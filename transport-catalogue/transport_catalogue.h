@@ -11,6 +11,7 @@
 #include <iterator>
 #include <algorithm>
 
+
 namespace transport {
     const auto EPSILON = 1e-6;
 
@@ -35,19 +36,19 @@ namespace transport {
         DIRECT
     };
 
-    struct Bus {
-        std::string name;
-        std::vector<Stop*> stops;
-        BusType type;
-    };
-
     struct BusInfo {
-        std::string name = {};
-        int stops = 0;
+        int stops_count = 0;
         int unique_stops = 0;
         double route_actual = 0.0;
         double route_geographic = 0.0;
         double curvature = 0.0;
+    };
+
+    struct Bus {
+        std::string name;
+        std::vector<Stop*> stops;
+        BusType type;
+        BusInfo info;
     };
 
 
@@ -59,7 +60,7 @@ namespace transport {
         void AddDistance(StopDistances& distances);
         void AddBus(Bus& bus);
 
-        BusInfo GetBusInfo(const std::string& bus_name);
+        Bus* GetBusInfo(const std::string& bus_name);
         std::vector<Bus*>& GetStopInfo(const std::string& stop_name);
         std::unordered_map<std::string_view, Stop*>& GetStopPtrs();
         double GetDistance(Stop* stop_from, Stop* stop_to);

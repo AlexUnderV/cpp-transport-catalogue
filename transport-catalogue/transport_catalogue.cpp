@@ -18,12 +18,16 @@ void transport::TransportCatalogue::AddBus(Bus& bus) {
     bus_source_.push_back(bus);
     bus_ptrs_.insert({bus_source_.back().name, &bus_source_.back()});
 
+    unordered_set<string_view> uniques;
     for (auto& stop : bus.stops) {
+        uniques.insert(stop->name);
         stop_to_buses_[stop];
         if (find(stop_to_buses_.at(stop).begin(), stop_to_buses_.at(stop).end(), bus_ptrs_.at(bus.name)) == stop_to_buses_.at(stop).end()) {
             stop_to_buses_[stop].push_back(bus_ptrs_.at(bus.name));
         }
     }
+    bus_source_.back().info.unique_stops = uniques.size();
+    bus_source_.back().info.stops_count = CalculateStops(bus.name);
 }
 
 int transport::TransportCatalogue::CalculateUniqueStops(const std::string& bus) {
@@ -99,17 +103,19 @@ bool transport::TransportCatalogue::FindStop(const string& stop_name) {
     return true;
 }
 
-transport::BusInfo transport::TransportCatalogue::GetBusInfo(const string& bus_name) {
-    BusInfo bus_info;
-    bus_info.name = bus_name;
-    if (bus_ptrs_.find(bus_name) != bus_ptrs_.end()) {
-        bus_info.stops = CalculateStops(bus_name);
-        bus_info.unique_stops = CalculateUniqueStops(bus_name);
-        bus_info.route_actual = CalculateRouteActual(bus_name);
-        bus_info.route_geographic = CalculateRouteGeographic(bus_name);
-        bus_info.curvature = CalculateCurvature(bus_info.route_actual, bus_info.route_geographic);
+transport::Bus* transport::TransportCatalogue::GetBusInfo(const string& bus_name) {
+    if (bus_ptrs_.find(bus_name) == bus_ptrs_.end()) {
+        return nullptr;
     }
-    return bus_info;
+    // Стоит ли перенести вычисление дистанций в метод AddBus()? Ведь тогда они будут считаться при каждом добавлении автобуса.
+    // Наставники советовали вычислять дистанции только при поступлении запросов.
+
+    auto& bus_link = bus_ptrs_.at(bus_name);
+    bus_link->info.route_actual = CalculateRouteActual(bus_name);
+    bus_link->info.route_geographic = CalculateRouteGeographic(bus_name);
+    bus_link->info.curvature = CalculateCurvature(bus_link->info.route_actual, bus_link->info.route_geographic);
+
+    return bus_link;
 }
 vector<transport::Bus*>& transport::TransportCatalogue::GetStopInfo(const string& stop_name) {
     if (!FindStop(stop_name)) {

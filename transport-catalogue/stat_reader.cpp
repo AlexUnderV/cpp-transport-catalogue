@@ -6,50 +6,53 @@
 
 using namespace std;
 
-void transport::output::detail::StatBus(BusInfo bus_info) {
-    cout << "Bus "s;
-    if (bus_info.stops == 0) {
-        cout << bus_info.name << ": "s << "not found"s << endl;
+void transport::output::detail::StatBus(Bus* bus, const string& bus_name, ostream& out) {
+
+    out << "Bus "s;
+    if (bus == nullptr) {
+        out << bus_name << ": "s << "not found"s << endl;
     } else {
-        cout << bus_info.name << ": "s
-             << bus_info.stops << " stops on route, "s
-             << bus_info.unique_stops << " unique stops, "s
-             << bus_info.route_actual << " route length, "s
-             << bus_info.curvature << " curvature"s << endl;
+        out << bus->name << ": "s
+             << bus->info.stops_count << " stops on route, "s
+             << bus->info.unique_stops << " unique stops, "s
+             << bus->info.route_actual << " route length, "s
+             << bus->info.curvature << " curvature"s << endl;
     }
 }
 
 
-void transport::output::detail::StatStop(const std::string& stop_name, const vector<Bus*>& buses, TransportCatalogue& catalogue) {
-    cout << "Stop "s << stop_name << ": "s;
+void transport::output::detail::StatStop(const std::string& stop_name,
+                                         const vector<Bus*>& buses,
+                                         TransportCatalogue& catalogue, ostream& out) {
+    out << "Stop "s << stop_name << ": "s;
 
     if (!catalogue.FindStop(stop_name)) {
-        cout << "not found"s << endl;
+        out << "not found"s << endl;
         return;
     }
 
     if (buses.empty()) {
-        cout << "no buses"s << endl;
+        out << "no buses"s << endl;
         return;
     }
 
-    cout << "buses "s;
+    out << "buses "s;
 
 
     for (const auto& bus : buses) {
-        cout << (bus)->name << " "s;
+        out << (bus)->name << " "s;
     }
-    cout << endl;
+    out << endl;
 
 }
 
 
-void transport::output::Output(std::vector<Query> query, TransportCatalogue& catalogue) {
+void transport::output::Output(std::vector<RawQuery> query, TransportCatalogue& catalogue, ostream& out) {
     for (const auto& q : query) {
         if (q.type == QyeryTypes::BUS) {
-            output::detail::StatBus(catalogue.GetBusInfo(q.name));
+            output::detail::StatBus(catalogue.GetBusInfo(q.name), q.name, out);
         } else if (q.type == QyeryTypes::STOP) {
-            output::detail::StatStop(q.name, catalogue.GetStopInfo(q.name), catalogue);
+            output::detail::StatStop(q.name, catalogue.GetStopInfo(q.name), catalogue, out);
         }
 
     }

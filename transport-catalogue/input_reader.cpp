@@ -5,8 +5,6 @@
 
 using namespace std;
 
-
-
 transport::Stop transport::parse::OnStop(string& line) {
 
     string stop_name;
@@ -36,7 +34,7 @@ transport::Stop transport::parse::OnStop(string& line) {
 
     return {stop_name, {stod(num1), stod(num2)}};
 }
-transport::StopDistances transport::parse::OnStopWithDistances(std::string& line) {
+transport::StopDistances transport::parse::OnStopWithDistances(const std::string& line) {
     string stop_name;
     auto pos_p = line.find_first_of('p');
     auto pos_div = line.find_first_of(':');
@@ -112,20 +110,23 @@ transport::Bus transport::parse::OnBus(string& line, const unordered_map<string_
         stops_ptrs.push_back(for_stop_ptrs.at(stop));
     }
 
-    return {bus_name, stops_ptrs, type};
+    BusInfo busInfo;
+
+
+    return {bus_name, stops_ptrs, type, busInfo};
 }
 
-
-transport::RawData transport::input::DataFromCommandLine() {
-    int count_data_input = 0;
-    cin >> count_data_input;
-    ++count_data_input;
+transport::RawData transport::input::Data(std::istream& input) {
+    string first_line;
+    getline(input, first_line);
+    int count_data_input = stoi(first_line);
 
     RawData raw_data;
 
     string line;
     while (count_data_input-- > 0) {
-        getline(cin, line);
+        getline(input, line);
+        //cout << line << endl;
         if (line[0] == 'S') {
             raw_data.stops.push_back(line);
         } else if (line[0] == 'B') {
@@ -134,16 +135,16 @@ transport::RawData transport::input::DataFromCommandLine() {
     }
     return raw_data;
 }
-std::vector<transport::Query> transport::input::QueryFromCommandLine() {
-    int count = 0;
-    cin >> count;
+std::vector<transport::RawQuery> transport::input::Query(std::istream& input) {
+    string first_line;
+    getline(input, first_line);
+    int count = stoi(first_line);
 
-    vector<Query> raw_query;
+    vector<RawQuery> raw_query;
 
-    ++count;
     string line;
     while (count-- > 0) {
-        getline(cin, line);
+        getline(input, line);
         if (line[0] == 'B') {
 
             string cut_bus_word;
@@ -162,50 +163,6 @@ std::vector<transport::Query> transport::input::QueryFromCommandLine() {
     }
     return raw_query;
 }
-
-transport::RawData transport::input::DataFromFile(string file_name) {
-    ifstream myfile;
-    myfile.open(file_name);
-    RawData raw_data;
-    string line;
-    if (myfile.is_open()) {
-        while (getline(myfile, line)) {
-            if (line[0] == 'S') {
-                raw_data.stops.push_back(line);
-            } else if (line[0] == 'B') {
-                raw_data.buses.push_back(line);
-            }
-        }
-    }
-    return raw_data;
-}
-vector<transport::Query> transport::input::QueryFromFile(string file_name) {
-    ifstream myfile;
-    myfile.open(file_name);
-    vector<Query> raw_query;
-    string line;
-    if (myfile.is_open()) {
-        while (getline(myfile, line)) {
-            if (line[0] == 'B') {
-
-                string cut_bus_word;
-                auto pos_s = line.find_first_of('s');
-                cut_bus_word = line.substr(pos_s + 2, line.size() - 1);
-
-                raw_query.push_back({transport::QyeryTypes::BUS, cut_bus_word});
-            } else if (line[0] == 'S') {
-
-                string cut_stop_word;
-                auto pos_s = line.find_first_of('p');
-                cut_stop_word = line.substr(pos_s + 2, line.size() - 1);
-
-                raw_query.push_back({transport::QyeryTypes::STOP, cut_stop_word});
-            }
-        }
-    }
-    return raw_query;
-}
-
 
 void transport::FillCatalogue(transport::TransportCatalogue& catalogue, RawData& raw_data) {
     vector<string> temp_distance;
