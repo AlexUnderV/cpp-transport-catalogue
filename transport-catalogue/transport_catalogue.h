@@ -73,12 +73,11 @@ namespace transport {
         double CalculateRouteBackward(const std::string& bus);
         double CalculateRouteActual(const std::string& bus);
         double CalculateRouteGeographic(const std::string& bus);
-        double CalculateCurvature(const double actual, const double geographic);
+        double CalculateCurvature(const double& actual, const double& geographic);
 
     private:
         std::deque<Stop> stops_source_;
         std::unordered_map<std::string_view, Stop*> stops_ptrs_;
-        //std::deque<std::string_view> stops_names_;
 
         std::deque<Bus> bus_source_;
         std::unordered_map<std::string_view, Bus*> bus_ptrs_;

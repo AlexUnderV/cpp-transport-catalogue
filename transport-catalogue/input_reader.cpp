@@ -5,7 +5,7 @@
 
 using namespace std;
 
-transport::Stop transport::parse::OnStop(string& line) {
+transport::Stop transport::parse::OnStop(const string& line) {
 
     string stop_name;
     auto pos_p = line.find_first_of('p');
@@ -67,7 +67,7 @@ transport::StopDistances transport::parse::OnStopWithDistances(const std::string
     }*/
     return {stop_name, dists};
 }
-transport::Bus transport::parse::OnBus(string& line, const unordered_map<string_view, Stop*>& for_stop_ptrs) {
+transport::Bus transport::parse::OnBus(const string& line, const unordered_map<string_view, Stop*>& for_stop_ptrs) {
 
     string cut_bus_begin;
     auto pos_s = line.find_first_of('s');
@@ -164,7 +164,7 @@ std::vector<transport::RawQuery> transport::input::Query(std::istream& input) {
     return raw_query;
 }
 
-void transport::FillCatalogue(transport::TransportCatalogue& catalogue, RawData& raw_data) {
+void transport::FillCatalogue(transport::TransportCatalogue& catalogue, const RawData& raw_data) {
     vector<string> temp_distance;
 
     for (auto& stop : raw_data.stops) {

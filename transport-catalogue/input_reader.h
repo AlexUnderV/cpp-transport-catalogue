@@ -33,9 +33,9 @@ namespace transport {
     };
 
     namespace parse {
-        Stop OnStop(std::string& line);
+        Stop OnStop(const std::string& line);
         StopDistances OnStopWithDistances(const std::string& line);
-        Bus OnBus(std::string& line, const std::unordered_map<std::string_view, Stop*>& for_stop_ptrs);
+        Bus OnBus(const std::string& line, const std::unordered_map<std::string_view, Stop*>& for_stop_ptrs);
     }
 
     namespace input {
@@ -44,7 +44,7 @@ namespace transport {
     }
 
 
-    void FillCatalogue(TransportCatalogue& catalogue, RawData& raw_data);
+    void FillCatalogue(TransportCatalogue& catalogue, const RawData& raw_data);
 
     namespace test {
         void ParseStop();

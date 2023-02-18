@@ -10,13 +10,13 @@
 namespace transport {
     namespace output {
         namespace detail {
-            void StatBus(Bus* bus, const std::string& bus_name, std::ostream& out);
+            void StatBus(const Bus* bus, const std::string& bus_name, std::ostream& out);
             void StatStop(const std::string& stop_name,
                           const std::vector<Bus*>& buses,
                           TransportCatalogue& catalogue, std::ostream& out);
         }
 
-        void Output(std::vector<RawQuery> query,
+        void Output(const std::vector<RawQuery>& query,
                     TransportCatalogue& catalogue, std::ostream& out);
     }
 }

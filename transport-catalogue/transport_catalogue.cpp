@@ -92,7 +92,7 @@ double transport::TransportCatalogue::CalculateRouteGeographic(const std::string
 
     return distance;
 }
-double transport::TransportCatalogue::CalculateCurvature(const double actual, const double geographic) {
+double transport::TransportCatalogue::CalculateCurvature(const double& actual, const double& geographic) {
     return actual / geographic;
 }
 

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-void transport::output::detail::StatBus(Bus* bus, const string& bus_name, ostream& out) {
+void transport::output::detail::StatBus(const Bus* bus, const string& bus_name, ostream& out) {
 
     out << "Bus "s;
     if (bus == nullptr) {
@@ -47,7 +47,7 @@ void transport::output::detail::StatStop(const std::string& stop_name,
 }
 
 
-void transport::output::Output(std::vector<RawQuery> query, TransportCatalogue& catalogue, ostream& out) {
+void transport::output::Output(const std::vector<RawQuery>& query, TransportCatalogue& catalogue, ostream& out) {
     for (const auto& q : query) {
         if (q.type == QyeryTypes::BUS) {
             output::detail::StatBus(catalogue.GetBusInfo(q.name), q.name, out);
