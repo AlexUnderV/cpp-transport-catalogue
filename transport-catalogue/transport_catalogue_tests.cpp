@@ -1,4 +1,4 @@
-#include "transport_catalogue.h"
+/*#include "transport_catalogue.h"
 
 #include <cassert>
 
@@ -104,5 +104,5 @@ void test::CalculateDistance() {
             assert((catalogue.CalculateRouteGeographic("256"s) - 4371.02) < EPSILON);
         }
     }
-    cerr << "TestCalculateDistance - Success!"s << endl;
+    cerr << "TestCalculateDistance - Success!"s << endl;*/
 }

@@ -1,4 +1,4 @@
-#pragma once
+/*#pragma once
 
 #include "transport_catalogue.h"
 
@@ -19,7 +19,7 @@ namespace transport {
         void Output(const std::vector<RawQuery>& query,
                     TransportCatalogue& catalogue, std::ostream& out);
     }
-}
+}*/
 
 
 

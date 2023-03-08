@@ -1,4 +1,4 @@
-#include "input_reader.h"
+/*#include "input_reader.h"
 
 #include <algorithm>
 #include <fstream>
@@ -62,9 +62,9 @@ transport::StopDistances transport::parse::OnStopWithDistances(const std::string
         distances = temp;
     }
 
-    /*for (auto& d : dists) {
+    for (auto& d : dists) {
         cout << "("s << d.first << ") - ("s << d.second << ")"s << endl;
-    }*/
+    }
     return {stop_name, dists};
 }
 transport::Bus transport::parse::OnBus(const string& line, const unordered_map<string_view, Stop*>& for_stop_ptrs) {
@@ -185,4 +185,4 @@ void transport::FillCatalogue(transport::TransportCatalogue& catalogue, const Ra
         auto b = parse::OnBus(bus, stops_in_catalogue_ptrs);
         catalogue.AddBus(b);
     }
-}
+}*/

@@ -1,4 +1,4 @@
-#include "stat_reader.h"
+/*#include "stat_reader.h"
 
 #include <vector>
 #include <string>
@@ -56,4 +56,4 @@ void transport::output::Output(const std::vector<RawQuery>& query, TransportCata
         }
 
     }
-}
+}*/

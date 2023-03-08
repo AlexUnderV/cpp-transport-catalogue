@@ -1,7 +1,7 @@
-#pragma once
+/*#pragma once
 
 #include "transport_catalogue.h"
-#include "stat_reader.h"
+#include "stat_reader.h"*/
 
 
 /*void TestFromFile1() {

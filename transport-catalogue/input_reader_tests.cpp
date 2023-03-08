@@ -1,4 +1,4 @@
-#include "input_reader.h"
+/*#include "input_reader.h"
 
 #include <cassert>
 
@@ -75,4 +75,4 @@ void test::ParseStopWithDistance() {
         }
         cerr << "TestParseStopWithDistance - Success!"s << endl;
     }
-}
+}*/

@@ -39,7 +39,7 @@ int transport::TransportCatalogue::CalculateUniqueStops(const std::string& bus) 
 }
 int transport::TransportCatalogue::CalculateStops(const std::string& bus) {
     int stops_count = static_cast<int>(bus_ptrs_.at(bus)->stops.size());
-    if (bus_ptrs_.at(bus)->type == BusType::DIRECT) {
+    if (bus_ptrs_.at(bus)->is_roundtrip == false) {
         stops_count = stops_count * 2 - 1;
     }
     return stops_count;
@@ -73,7 +73,7 @@ double transport::TransportCatalogue::CalculateRouteBackward(const std::string& 
 double transport::TransportCatalogue::CalculateRouteActual(const std::string& bus) {
     double distance_forward = CalculateRouteForward(bus);
 
-    if (bus_ptrs_.at(bus)->type == BusType::DIRECT) {
+    if (bus_ptrs_.at(bus)->is_roundtrip == false) {
         double distance_backward = CalculateRouteBackward(bus);
         return distance_forward + distance_backward;
     }
@@ -86,7 +86,7 @@ double transport::TransportCatalogue::CalculateRouteGeographic(const std::string
         distance += ComputeDistance((*it1)->coordinates, (*it2)->coordinates);
     }
 
-    if (bus_ptrs_.at(bus)->type == BusType::DIRECT) {
+    if (bus_ptrs_.at(bus)->is_roundtrip == false) {
         distance *= 2;
     }
 
@@ -117,17 +117,27 @@ transport::Bus* transport::TransportCatalogue::GetBusInfo(const string& bus_name
 
     return bus_link;
 }
-vector<transport::Bus*>& transport::TransportCatalogue::GetStopInfo(const string& stop_name) {
+transport::StopInfo transport::TransportCatalogue::GetStopInfo(const string& stop_name) {
     if (!FindStop(stop_name)) {
-        static vector<Bus*> empty = {};
-        return empty;
+        StopInfo info;
+        info.stop = nullptr;
+        return info;
     }
     sort((stop_to_buses_.at(stops_ptrs_.at(stop_name))).begin(), (stop_to_buses_.at(stops_ptrs_.at(stop_name))).end(),
          [](Bus* left, Bus* right){ return left->name < right->name; });
-    return stop_to_buses_.at(stops_ptrs_.at(stop_name));
+
+    StopInfo info;
+    info.stop = stops_ptrs_.at(stop_name);
+    info.buses = stop_to_buses_.at(stops_ptrs_.at(stop_name));
+
+    return info;
 }
-std::unordered_map<std::string_view, transport::Stop*>& transport::TransportCatalogue::GetStopPtrs() {
+
+const std::unordered_map<std::string_view, transport::Stop*>& transport::TransportCatalogue::GetStopPtrs() const {
     return stops_ptrs_;
+}
+const std::unordered_map<std::string_view, transport::Bus*>& transport::TransportCatalogue::GetBusPtrs() const {
+    return bus_ptrs_;
 }
 double transport::TransportCatalogue::GetDistance(Stop* stop_from, Stop* stop_to) {
     if (distances_.find({stop_from, stop_to}) == distances_.end()) {
@@ -135,3 +145,4 @@ double transport::TransportCatalogue::GetDistance(Stop* stop_from, Stop* stop_to
     }
     return distances_.at({stop_from, stop_to});
 }
+
