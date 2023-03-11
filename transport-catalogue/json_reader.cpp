@@ -19,11 +19,11 @@ void JsonReader::OutputJson(std::ostream& out) {
 void JsonReader::FillCatalogue(transport::TransportCatalogue& catalogue) {
     vector<transport::StopDistances> stops_distances;
 
-    for (auto& request : json_doc_.GetRoot().AsMap().at("base_requests"s).AsArray()) {
-        auto& map = request.AsMap();
+    for (auto& request : json_doc_.GetRoot().AsDict().at("base_requests"s).AsArray()) {
+        auto& map = request.AsDict();
         if (map.at("type"s) == "Stop"s) {
-            if (!map.at("road_distances"s).AsMap().empty()) {
-                auto& dists = map.at("road_distances"s).AsMap();
+            if (!map.at("road_distances"s).AsDict().empty()) {
+                auto& dists = map.at("road_distances"s).AsDict();
 
                 transport::StopDistances stop_dists;
                 stop_dists.name_from = map.at("name").AsString();
@@ -45,8 +45,8 @@ void JsonReader::FillCatalogue(transport::TransportCatalogue& catalogue) {
         catalogue.AddDistance(dist);
     }
 
-    for (auto& request : json_doc_.GetRoot().AsMap().at("base_requests"s).AsArray()) {
-        auto& map = request.AsMap();
+    for (auto& request : json_doc_.GetRoot().AsDict().at("base_requests"s).AsArray()) {
+        auto& map = request.AsDict();
 
         if (map.at("type"s) == "Bus"s) {
             const auto& stops_ptrs = catalogue.GetStopPtrs();
@@ -66,7 +66,7 @@ void JsonReader::FillCatalogue(transport::TransportCatalogue& catalogue) {
 void JsonReader::GetRenderSettings(MapRenderer& renderer) {
     RenderSettings settings;
 
-    auto& map = json_doc_.GetRoot().AsMap().at("render_settings"s).AsMap();
+    auto& map = json_doc_.GetRoot().AsDict().at("render_settings"s).AsDict();
 
     settings.width = map.at("width"s).AsDouble();
     settings.height = map.at("height"s).AsDouble();
@@ -128,15 +128,79 @@ void JsonReader::GetRenderSettings(MapRenderer& renderer) {
     renderer.SetRenderSettings(settings);
 }
 void JsonReader::OutputStat(transport::TransportCatalogue& catalogue, ostream& out) {
-    json::Array arr;
+    json::Builder builder;
+    builder.StartArray();
+    for (const auto& query : json_doc_.GetRoot().AsDict().at("stat_requests"s).AsArray()) {
+        if (query.AsDict().at("type"s).AsString() == "Stop"s) {
+            const auto stop = catalogue.GetStopInfo(query.AsDict().at("name"s).AsString());
+            builder.StartDict();
 
-    for (const auto& query : json_doc_.GetRoot().AsMap().at("stat_requests"s).AsArray()) {
-        if (query.AsMap().at("type"s).AsString() == "Stop"s) {
-            const auto stop = catalogue.GetStopInfo(query.AsMap().at("name"s).AsString());
+            if (stop.stop == nullptr) {
+                builder.Key("request_id"s).Value(json::Node{query.AsDict().at("id"s).AsInt()});
+                builder.Key("error_message"s).Value(json::Node{"not found"s});
+            } else {
+
+                json::Array buses;
+                for (const auto& bus : stop.buses) {
+                    buses.push_back(bus->name);
+                }
+                builder.Key("buses"s).Value(json::Node{buses});
+                builder.Key("request_id"s).Value(json::Node{query.AsDict().at("id"s).AsInt()});
+            }
+            builder.EndDict();
+        }
+
+        if (query.AsDict().at("type"s).AsString() == "Bus"s) {
+            transport::Bus* bus = catalogue.GetBusInfo(query.AsDict().at("name"s).AsString());
+            builder.StartDict();
+
+            if (bus == nullptr) {
+                builder.Key("request_id").Value(json::Node{query.AsDict().at("id"s).AsInt()});
+                builder.Key("error_message").Value(json::Node{"not found"s});
+            } else {
+                builder.Key("curvature").Value(json::Node{bus->info.curvature});
+                builder.Key("request_id").Value(json::Node{query.AsDict().at("id"s).AsInt()});
+                builder.Key("route_length").Value(json::Node{bus->info.route_actual});
+                builder.Key("stop_count").Value(json::Node{bus->info.stops_count});
+                builder.Key("unique_stop_count").Value(json::Node{bus->info.unique_stops});
+            }
+            builder.EndDict();
+            //arr.push_back(answer);
+        }
+
+        if (query.AsDict().at("type"s).AsString() == "Map"s) {
+            //json::Dict answer;
+
+            std::ostringstream output;
+
+            RequestHandler handler(catalogue);
+            MapRenderer renderer(handler);
+            GetRenderSettings(renderer);
+            renderer.SetCanvas();
+            renderer.DrawRoutes(output);
+
+            std::string result;
+            for (const auto& c : output.str()) {
+                if (c == '"') {
+                    result += '\"';
+                } else {
+                    result +=c;
+                }
+            }
+            builder.StartDict()
+                    .Key("map"s).Value(json::Node{result})
+                    .Key("request_id"s).Value(json::Node{query.AsDict().at("id"s).AsInt()});
+            builder.EndDict();
+        }
+    }
+    builder.EndArray();
+    /*for (const auto& query : json_doc_.GetRoot().AsDict().at("stat_requests"s).AsArray()) {
+        if (query.AsDict().at("type"s).AsString() == "Stop"s) {
+            const auto stop = catalogue.GetStopInfo(query.AsDict().at("name"s).AsString());
             json::Dict answer;
 
             if (stop.stop == nullptr) {
-                answer["request_id"] = json::Node{query.AsMap().at("id"s).AsInt()};
+                answer["request_id"] = json::Node{query.AsDict().at("id"s).AsInt()};
                 answer["error_message"] = json::Node{"not found"s};
             } else {
                 json::Array buses;
@@ -144,22 +208,22 @@ void JsonReader::OutputStat(transport::TransportCatalogue& catalogue, ostream& o
                     buses.push_back(bus->name);
                 }
                 answer["buses"s] = json::Node{buses};
-                answer["request_id"s] = json::Node{query.AsMap().at("id"s).AsInt()};
+                answer["request_id"s] = json::Node{query.AsDict().at("id"s).AsInt()};
             }
 
             arr.push_back(answer);
         }
 
-        if (query.AsMap().at("type"s).AsString() == "Bus"s) {
-            transport::Bus* bus = catalogue.GetBusInfo(query.AsMap().at("name"s).AsString());
+        if (query.AsDict().at("type"s).AsString() == "Bus"s) {
+            transport::Bus* bus = catalogue.GetBusInfo(query.AsDict().at("name"s).AsString());
             json::Dict answer;
 
             if (bus == nullptr) {
-                answer["request_id"] = json::Node{query.AsMap().at("id"s).AsInt()};
+                answer["request_id"] = json::Node{query.AsDict().at("id"s).AsInt()};
                 answer["error_message"] = json::Node{"not found"s};
             } else {
                 answer["curvature"s] = json::Node{bus->info.curvature};
-                answer["request_id"] = json::Node{query.AsMap().at("id"s).AsInt()};
+                answer["request_id"] = json::Node{query.AsDict().at("id"s).AsInt()};
                 answer["route_length"] = json::Node{bus->info.route_actual};
                 answer["stop_count"s] = json::Node{bus->info.stops_count};
                 answer["unique_stop_count"s] = json::Node{bus->info.unique_stops};
@@ -168,7 +232,7 @@ void JsonReader::OutputStat(transport::TransportCatalogue& catalogue, ostream& o
             arr.push_back(answer);
         }
 
-        if (query.AsMap().at("type"s).AsString() == "Map"s) {
+        if (query.AsDict().at("type"s).AsString() == "Map"s) {
             json::Dict answer;
 
             std::ostringstream output;
@@ -177,7 +241,7 @@ void JsonReader::OutputStat(transport::TransportCatalogue& catalogue, ostream& o
             MapRenderer renderer(handler);
             GetRenderSettings(renderer);
             renderer.SetCanvas();
-            renderer.DrawRouts(output);
+            renderer.DrawRoutes(output);
 
             std::string result;
             for (const auto& c : output.str()) {
@@ -190,10 +254,15 @@ void JsonReader::OutputStat(transport::TransportCatalogue& catalogue, ostream& o
 
             answer["map"] = json::Node{result};
 
-            answer["request_id"] = json::Node{query.AsMap().at("id"s).AsInt()};
+            answer["request_id"] = json::Node{query.AsDict().at("id"s).AsInt()};
 
             arr.push_back(answer);
         }
-    }
-    out << json::Print(json::Node{arr}) << endl;
+    }*/
+
+    json::Print(json::Document{builder.Build()}, out);
+
+    //json::Print(json::Document{node}, out);
+    //json::Print(json::Document{json::Node{arr}}, out);
+    //out << json::Print(json::Node{arr}, out) << endl;
 }

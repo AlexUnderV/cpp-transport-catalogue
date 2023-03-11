@@ -128,7 +128,7 @@ public:
     svg::Circle CreateCirclePointsShapes(svg::Point point);
 
     void SetCanvas();
-    void DrawRouts(std::ostream& out);
+    void DrawRoutes(std::ostream& out);
 
 private:
     RenderSettings render_settings_;

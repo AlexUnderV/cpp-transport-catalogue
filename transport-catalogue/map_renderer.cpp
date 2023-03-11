@@ -183,6 +183,6 @@ void MapRenderer::SetCanvas() {
     }
 }
 
-void MapRenderer::DrawRouts(std::ostream& out) {
+void MapRenderer::DrawRoutes(std::ostream& out) {
     document_.Render(out);
 }
